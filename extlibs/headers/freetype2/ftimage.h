@@ -5,7 +5,7 @@
 /*    FreeType glyph image formats and default raster interface            */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 1996-2010, 2013, 2014 by                                     */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -24,12 +24,12 @@
   /*************************************************************************/
 
 
-#ifndef __FTIMAGE_H__
-#define __FTIMAGE_H__
+#ifndef FTIMAGE_H_
+#define FTIMAGE_H_
 
 
-  /* _STANDALONE_ is from ftgrays.c */
-#ifndef _STANDALONE_
+  /* STANDALONE_ is from ftgrays.c */
+#ifndef STANDALONE_
 #include <ft2build.h>
 #endif
 
@@ -169,13 +169,13 @@ FT_BEGIN_HEADER
   /*      @FT_RENDER_MODE_LCD_V.                                           */
   /*                                                                       */
   /*    FT_PIXEL_MODE_BGRA ::                                              */
-  /*      An image with four 8-bit channels per pixel, representing a      */
-  /*      color image (such as emoticons) with alpha channel.  For each    */
-  /*      pixel, the format is BGRA, which means, the blue channel comes   */
-  /*      first in memory.  The color channels are pre-multiplied and in   */
-  /*      the sRGB colorspace.  For example, full red at half-translucent  */
-  /*      opacity will be represented as `00,00,80,80', not `00,00,FF,80'. */
-  /*      See also @FT_LOAD_COLOR.                                         */
+  /*      [Since 2.5] An image with four 8-bit channels per pixel,         */
+  /*      representing a color image (such as emoticons) with alpha        */
+  /*      channel.  For each pixel, the format is BGRA, which means, the   */
+  /*      blue channel comes first in memory.  The color channels are      */
+  /*      pre-multiplied and in the sRGB colorspace.  For example, full    */
+  /*      red at half-translucent opacity will be represented as           */
+  /*      `00,00,80,80', not `00,00,FF,80'.  See also @FT_LOAD_COLOR.      */
   /*                                                                       */
   typedef enum  FT_Pixel_Mode_
   {
@@ -258,11 +258,6 @@ FT_BEGIN_HEADER
   /*                    field is intended for paletted pixel modes.  Not   */
   /*                    used currently.                                    */
   /*                                                                       */
-  /* <Note>                                                                */
-  /*   For now, the only pixel modes supported by FreeType are mono and    */
-  /*   grays.  However, drivers might be added in the future to support    */
-  /*   more `colorful' options.                                            */
-  /*                                                                       */
   typedef struct  FT_Bitmap_
   {
     unsigned int    rows;
@@ -306,11 +301,11 @@ FT_BEGIN_HEADER
   /*                  each outline point's type.                           */
   /*                                                                       */
   /*                  If bit~0 is unset, the point is `off' the curve,     */
-  /*                  i.e., a Bézier control point, while it is `on' if    */
+  /*                  i.e., a Bezier control point, while it is `on' if    */
   /*                  set.                                                 */
   /*                                                                       */
   /*                  Bit~1 is meaningful for `off' points only.  If set,  */
-  /*                  it indicates a third-order Bézier arc control point; */
+  /*                  it indicates a third-order Bezier arc control point; */
   /*                  and a second-order control point if unset.           */
   /*                                                                       */
   /*                  If bit~2 is set, bits 5-7 contain the drop-out mode  */
@@ -537,7 +532,7 @@ FT_BEGIN_HEADER
   /*    A function pointer type used to describe the signature of a `conic */
   /*    to' function during outline walking or decomposition.              */
   /*                                                                       */
-  /*    A `conic to' is emitted to indicate a second-order Bézier arc in   */
+  /*    A `conic to' is emitted to indicate a second-order Bezier arc in   */
   /*    the outline.                                                       */
   /*                                                                       */
   /* <Input>                                                               */
@@ -569,12 +564,12 @@ FT_BEGIN_HEADER
   /*    A function pointer type used to describe the signature of a `cubic */
   /*    to' function during outline walking or decomposition.              */
   /*                                                                       */
-  /*    A `cubic to' is emitted to indicate a third-order Bézier arc.      */
+  /*    A `cubic to' is emitted to indicate a third-order Bezier arc.      */
   /*                                                                       */
   /* <Input>                                                               */
-  /*    control1 :: A pointer to the first Bézier control point.           */
+  /*    control1 :: A pointer to the first Bezier control point.           */
   /*                                                                       */
-  /*    control2 :: A pointer to the second Bézier control point.          */
+  /*    control2 :: A pointer to the second Bezier control point.          */
   /*                                                                       */
   /*    to       :: A pointer to the target end point.                     */
   /*                                                                       */
@@ -600,16 +595,16 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    A structure to hold various function pointers used during outline  */
-  /*    decomposition in order to emit segments, conic, and cubic Béziers. */
+  /*    decomposition in order to emit segments, conic, and cubic Beziers. */
   /*                                                                       */
   /* <Fields>                                                              */
   /*    move_to  :: The `move to' emitter.                                 */
   /*                                                                       */
   /*    line_to  :: The segment emitter.                                   */
   /*                                                                       */
-  /*    conic_to :: The second-order Bézier arc emitter.                   */
+  /*    conic_to :: The second-order Bezier arc emitter.                   */
   /*                                                                       */
-  /*    cubic_to :: The third-order Bézier arc emitter.                    */
+  /*    cubic_to :: The third-order Bezier arc emitter.                    */
   /*                                                                       */
   /*    shift    :: The shift that is applied to coordinates before they   */
   /*                are sent to the emitter.                               */
@@ -624,7 +619,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    {                                                                  */
   /*      x' = (x << shift) - delta                                        */
-  /*      y' = (x << shift) - delta                                        */
+  /*      y' = (y << shift) - delta                                        */
   /*    }                                                                  */
   /*                                                                       */
   /*    Set the values of `shift' and `delta' to~0 to get the original     */
@@ -706,7 +701,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    FT_GLYPH_FORMAT_OUTLINE ::                                         */
   /*      The glyph image is a vectorial outline made of line segments     */
-  /*      and Bézier arcs; it can be described as an @FT_Outline; you      */
+  /*      and Bezier arcs; it can be described as an @FT_Outline; you      */
   /*      generally want to access the `outline' field of the              */
   /*      @FT_GlyphSlotRec structure to read it.                           */
   /*                                                                       */
@@ -752,7 +747,7 @@ FT_BEGIN_HEADER
   /*************************************************************************/
   /*                                                                       */
   /* A raster is a scan converter, in charge of rendering an outline into  */
-  /* a a bitmap.  This section contains the public API for rasters.        */
+  /* a bitmap.  This section contains the public API for rasters.          */
   /*                                                                       */
   /* Note that in FreeType 2, all rasters are now encapsulated within      */
   /* specific modules called `renderers'.  See `ftrender.h' for more       */
@@ -864,16 +859,6 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    This can be used to write anti-aliased outlines directly to a      */
   /*    given background bitmap, and even perform translucency.            */
-  /*                                                                       */
-  /*    Note that the `count' field cannot be greater than a fixed value   */
-  /*    defined by the `FT_MAX_GRAY_SPANS' configuration macro in          */
-  /*    `ftoption.h'.  By default, this value is set to~32, which means    */
-  /*    that if there are more than 32~spans on a given scanline, the      */
-  /*    callback is called several times with the same `y' parameter in    */
-  /*    order to draw all callbacks.                                       */
-  /*                                                                       */
-  /*    Otherwise, the callback is only called once per scan-line, and     */
-  /*    only for those scanlines that do have `gray' pixels on them.       */
   /*                                                                       */
   typedef void
   (*FT_SpanFunc)( int             y,
@@ -1078,26 +1063,25 @@ FT_BEGIN_HEADER
   /*    FT_Raster_ResetFunc                                                */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    FreeType provides an area of memory called the `render pool',      */
-  /*    available to all registered rasters.  This pool can be freely used */
-  /*    during a given scan-conversion but is shared by all rasters.  Its  */
-  /*    content is thus transient.                                         */
+  /*    FreeType used to provide an area of memory called the `render      */
+  /*    pool' available to all registered rasterizers.  This was not       */
+  /*    thread safe, however, and now FreeType never allocates this pool.  */
   /*                                                                       */
-  /*    This function is called each time the render pool changes, or just */
-  /*    after a new raster object is created.                              */
+  /*    This function is called after a new raster object is created.      */
   /*                                                                       */
   /* <Input>                                                               */
   /*    raster    :: A handle to the new raster object.                    */
   /*                                                                       */
-  /*    pool_base :: The address in memory of the render pool.             */
+  /*    pool_base :: Previously, the address in memory of the render pool. */
+  /*                 Set this to NULL.                                     */
   /*                                                                       */
-  /*    pool_size :: The size in bytes of the render pool.                 */
+  /*    pool_size :: Previously, the size in bytes of the render pool.     */
+  /*                 Set this to 0.                                        */
   /*                                                                       */
   /* <Note>                                                                */
-  /*    Rasters can ignore the render pool and rely on dynamic memory      */
-  /*    allocation if they want to (a handle to the memory allocator is    */
-  /*    passed to the raster constructor).  However, this is not           */
-  /*    recommended for efficiency purposes.                               */
+  /*    Rasterizers should rely on dynamic or stack allocation if they     */
+  /*    want to (a handle to the memory allocator is passed to the         */
+  /*    rasterizer constructor).                                           */
   /*                                                                       */
   typedef void
   (*FT_Raster_ResetFunc)( FT_Raster       raster,
@@ -1196,6 +1180,7 @@ FT_BEGIN_HEADER
   typedef struct  FT_Raster_Funcs_
   {
     FT_Glyph_Format        glyph_format;
+
     FT_Raster_NewFunc      raster_new;
     FT_Raster_ResetFunc    raster_reset;
     FT_Raster_SetModeFunc  raster_set_mode;
@@ -1209,7 +1194,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTIMAGE_H__ */
+#endif /* FTIMAGE_H_ */
 
 
 /* END */

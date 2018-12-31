@@ -40,7 +40,9 @@
 #include FT_STROKER_H
 #include <cstdlib>
 #include <cstring>
+#include <freetype/ftlcdfil.h>
 
+#define SFML_USE_SUBPIXEL_FREETYPE
 
 namespace
 {
@@ -153,6 +155,15 @@ bool Font::loadFromFile(const std::string& filename)
     }
     m_library = library;
 
+    #ifdef SFML_USE_SUBPIXEL_FREETYPE
+    // Set font filter
+    if(FT_Library_SetLcdFilter(static_cast<FT_Library>(m_library), FT_LCD_FILTER_LEGACY) != 0)
+    {
+        err() << "Failed to load font \"" << filename << "\" (failed to set filter)" << std::endl;
+        return false;
+    }
+    #endif
+
     // Load the new font face from the specified file
     FT_Face face;
     if (FT_New_Face(static_cast<FT_Library>(m_library), filename.c_str(), 0, &face) != 0)
@@ -217,6 +228,15 @@ bool Font::loadFromMemory(const void* data, std::size_t sizeInBytes)
         return false;
     }
     m_library = library;
+
+    #ifdef SFML_USE_SUBPIXEL_FREETYPE
+    // Set font filter
+    if(FT_Library_SetLcdFilter(static_cast<FT_Library>(m_library), FT_LCD_FILTER_LEGACY) != 0)
+    {
+        err() << "Failed to load font from memory (failed to set filter)" << std::endl;
+        return false;
+    }
+    #endif
 
     // Load the new font face from the specified file
     FT_Face face;
@@ -291,6 +311,15 @@ bool Font::loadFromStream(InputStream& stream)
     args.flags  = FT_OPEN_STREAM;
     args.stream = rec;
     args.driver = 0;
+
+    #ifdef SFML_USE_SUBPIXEL_FREETYPE
+    // Set font filter
+    if(FT_Library_SetLcdFilter(static_cast<FT_Library>(m_library), FT_LCD_FILTER_LEGACY) != 0)
+    {
+        err() << "Failed to load font from stream (failed to set filter)" << std::endl;
+        return false;
+    }
+    #endif
 
     // Load the new font face from the specified stream
     FT_Face face;
@@ -576,7 +605,11 @@ Glyph Font::loadGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, f
     }
 
     // Convert the glyph to a bitmap (i.e. rasterize it)
+    #ifdef SFML_USE_SUBPIXEL_FREETYPE
+    FT_Glyph_To_Bitmap(&glyphDesc, FT_RENDER_MODE_LCD, 0, 1);
+    #else
     FT_Glyph_To_Bitmap(&glyphDesc, FT_RENDER_MODE_NORMAL, 0, 1);
+    #endif
     FT_Bitmap& bitmap = reinterpret_cast<FT_BitmapGlyph>(glyphDesc)->bitmap;
 
     // Apply bold if necessary -- fallback technique using bitmap (lower quality)
@@ -594,7 +627,11 @@ Glyph Font::loadGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, f
     if (bold)
         glyph.advance += static_cast<float>(weight) / static_cast<float>(1 << 6);
 
+    #ifdef SFML_USE_SUBPIXEL_FREETYPE
+    int width = bitmap.width / 3;
+    #else
     int width  = bitmap.width;
+    #endif
     int height = bitmap.rows;
 
     if ((width > 0) && (height > 0))
@@ -631,6 +668,17 @@ Glyph Font::loadGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, f
         Uint8* current = &m_pixelBuffer[0];
         Uint8* end = current + width * height * 4;
 
+        #ifdef SFML_USE_SUBPIXEL_FREETYPE
+        // With a subpixel smoothed font, each rgb component represents the coverage for that channel
+        // Therefore, initialising to 255 would mean fully covered, which is not desirable
+        while (current != end)
+        {
+            (*current++) = 0;
+            (*current++) = 0;
+            (*current++) = 0;
+            (*current++) = 0;
+        }
+        #else
         while (current != end)
         {
             (*current++) = 255;
@@ -638,9 +686,38 @@ Glyph Font::loadGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, f
             (*current++) = 255;
             (*current++) = 0;
         }
+        #endif
+
+        const Uint8* pixels = bitmap.buffer;
+
+        #ifdef SFML_USE_SUBPIXEL_FREETYPE
+        if(bitmap.pixel_mode != FT_PIXEL_MODE_LCD)
+        {
+            err() << "Freetype returned a mode other than FT_PIXEL_MODE_LCD" << std::endl;
+            throw std::runtime_error("Bad freetype mode (expected FT_PIXEL_MODE_LCD)");
+        }
 
         // Extract the glyph's pixels from the bitmap
-        const Uint8* pixels = bitmap.buffer;
+        for (unsigned int y = padding; y < height - padding; ++y)
+        {
+            for (unsigned int x = padding; x < width - padding; x++)
+            {
+                // The color channels remain white, just fill the alpha channel
+                std::size_t index = x + y * width;
+
+                m_pixelBuffer[index * 4 + 0] = pixels[(x - padding) * 3 + 0];
+                m_pixelBuffer[index * 4 + 1] = pixels[(x - padding) * 3 + 1];
+                m_pixelBuffer[index * 4 + 2] = pixels[(x - padding) * 3 + 2];
+
+                // The alpha of a subpixel font is somewhat meaningless
+                // Each rgb channel represents the coverage for each subpixel
+                m_pixelBuffer[index * 4 + 3] = 255;
+            }
+
+            pixels += bitmap.pitch;
+        }
+        #else
+        // Extract the glyph's pixels from the bitmap
         if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
         {
             // Pixels are 1 bit monochrome values
@@ -669,6 +746,8 @@ Glyph Font::loadGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, f
                 pixels += bitmap.pitch;
             }
         }
+
+        #endif
 
         // Write the pixels to the texture
         unsigned int x = glyph.textureRect.left - padding;

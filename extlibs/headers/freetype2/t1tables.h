@@ -5,7 +5,7 @@
 /*    Basic Type 1/Type 2 tables definitions and interface (specification  */
 /*    only).                                                               */
 /*                                                                         */
-/*  Copyright 1996-2004, 2006, 2008, 2009, 2011, 2014 by                   */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,8 +17,8 @@
 /***************************************************************************/
 
 
-#ifndef __T1TABLES_H__
-#define __T1TABLES_H__
+#ifndef T1TABLES_H_
+#define T1TABLES_H_
 
 
 #include <ft2build.h>
@@ -291,7 +291,7 @@ FT_BEGIN_HEADER
 
   } PS_DesignMapRec, *PS_DesignMap;
 
-  /* backwards-compatible definition */
+  /* backward compatible definition */
   typedef PS_DesignMapRec  T1_DesignMap;
 
 
@@ -326,7 +326,7 @@ FT_BEGIN_HEADER
   } PS_BlendRec, *PS_Blend;
 
 
-  /* backwards-compatible definition */
+  /* backward compatible definition */
   typedef PS_BlendRec  T1_Blend;
 
 
@@ -492,8 +492,9 @@ FT_BEGIN_HEADER
    *    FreeType error code.  0~means success.
    *
    * @note:
-   *    The string pointers within the font info structure are owned by
-   *    the face and don't need to be freed by the caller.
+   *    String pointers within the @PS_FontInfoRec structure are owned by
+   *    the face and don't need to be freed by the caller.  Missing entries
+   *    in the font's FontInfo dictionary are represented by NULL pointers.
    *
    *    If the font's format is not PostScript-based, this function will
    *    return the `FT_Err_Invalid_Argument' error code.
@@ -552,6 +553,9 @@ FT_BEGIN_HEADER
   /*    T1_ENCODING_TYPE_STANDARD ::                                       */
   /*    T1_ENCODING_TYPE_ISOLATIN1 ::                                      */
   /*    T1_ENCODING_TYPE_EXPERT ::                                         */
+  /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.4.8                                                              */
   /*                                                                       */
   typedef enum  T1_EncodingType_
   {
@@ -620,6 +624,9 @@ FT_BEGIN_HEADER
   /*    PS_DICT_UNDERLINE_THICKNESS ::                                     */
   /*    PS_DICT_FS_TYPE ::                                                 */
   /*    PS_DICT_ITALIC_ANGLE ::                                            */
+  /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.4.8                                                              */
   /*                                                                       */
   typedef enum  PS_Dict_Keys_
   {
@@ -742,6 +749,9 @@ FT_BEGIN_HEADER
    *    If the font's format is not PostScript-based, this function returns
    *    the `FT_Err_Invalid_Argument' error code.
    *
+   * @since:
+   *    2.4.8
+   *
    */
   FT_EXPORT( FT_Long )
   FT_Get_PS_Font_Value( FT_Face       face,
@@ -754,7 +764,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __T1TABLES_H__ */
+#endif /* T1TABLES_H_ */
 
 
 /* END */
